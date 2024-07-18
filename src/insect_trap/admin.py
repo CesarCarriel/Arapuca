@@ -4,8 +4,8 @@ from .models import InsectTrap, InsectTrapType, Insect
 
 @admin.register(InsectTrap)
 class InsectTrapAdmin(admin.ModelAdmin):
-    list_display = ('id', 'type', 'field', 'created_at')
-    list_filter = ('type', 'type__insect')
+    list_display = ('id', 'type', 'field', 'created_by', 'created_at')
+    list_filter = ('type', 'type__insect', 'created_by')
     date_hierarchy = 'created_at'
 
 
