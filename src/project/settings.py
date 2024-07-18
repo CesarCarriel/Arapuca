@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.gis',
 
     'rural_property.apps.RuralPropertyConfig',
+    'insect_trap.apps.InsectTrapConfig',
+    'authentication.apps.AuthenticationConfig',
 ]
 
 MIDDLEWARE = [
@@ -50,6 +52,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'project.urls'
+
+AUTH_USER_MODEL = 'authentication.User'
 
 TEMPLATES = [
     {
