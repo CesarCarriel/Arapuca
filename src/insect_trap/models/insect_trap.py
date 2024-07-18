@@ -15,3 +15,6 @@ class InsectTrap(LogMixin):
     class Meta:
         db_table = 'insect_trap'
         verbose_name = 'armadilha'
+
+    def __str__(self):
+        return f'Armadilha {self.type.name.lower()} em {self.field.get_absolute_path()}'

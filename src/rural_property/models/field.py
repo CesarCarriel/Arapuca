@@ -15,3 +15,6 @@ class Field(LogMixin):
 
     def __str__(self):
         return f'{self.tract.rural_property} - {self.tract} - {self.code}'
+
+    def get_absolute_path(self):
+        return f'{self.tract.rural_property}-{self.tract.code}-{self.code}'
