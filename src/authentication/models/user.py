@@ -49,7 +49,7 @@ class User(AbstractBaseUser, PermissionsMixin, LogMixin):
         verbose_name = 'usuário'
 
     def __str__(self):
-        return f'{self.name} - {self.email}'
+        return f'{self.name} - {self.email}' if self.name else self.email
 
     def clean(self):
         super().clean()
