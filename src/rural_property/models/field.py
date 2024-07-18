@@ -6,7 +6,7 @@ from base.models import LogMixin
 class Field(LogMixin):
     code = models.CharField('código', max_length=20)
     tract = models.ForeignKey('rural_property.Tract', verbose_name='gleba', on_delete=models.PROTECT)
-    area = models.PolygonField(verbose_name='área')
+    geometry = models.MultiPolygonField(verbose_name='área')
 
     class Meta:
         db_table = 'field'
