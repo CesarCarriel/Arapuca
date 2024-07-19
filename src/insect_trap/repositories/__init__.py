@@ -1,2 +1,3 @@
 from .insect_trap import InsectTrapRepository
 from .insect_trap_type import InsectTrapTypeRepository
+from .insect_trap_result import InsectTrapResultRepository
