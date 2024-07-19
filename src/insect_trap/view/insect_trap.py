@@ -2,17 +2,17 @@ import json
 from datetime import datetime, date
 from typing import List, Dict
 
-from django.contrib.gis.db.models import Collect
 from django.contrib.gis.geos import GEOSGeometry
-from django.db import models
-from django.db.models.functions import Concat
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from geojson import FeatureCollection
 
+from base.gis import get_bounding_box
 from insect_trap.models import InsectTrap
+from insect_trap.repositories import InsectTrapRepository
 from rural_property.models import Field
+from rural_property.repository import FieldRepository
 
 
 def list_dict_to_geojson(values: List[Dict]):
@@ -55,85 +55,35 @@ def list_dict_to_geojson(values: List[Dict]):
 @csrf_exempt
 def view(request):
     if request.method == "GET":
-        fields = Field.objects.annotate(
-            path=Concat(
-                models.F('tract__rural_property__code'),
-                models.Value('-'),
-                models.F('tract__code'),
-                models.Value('-'),
-                models.F('code'),
-                output_field=models.CharField()
-            ),
-            rural_property_code=models.F('tract__rural_property__code'),
-        ).all()
-        insect_traps = InsectTrap.objects.annotate(
-            rural_property_code=Concat(
-                models.F('field__tract__rural_property__code'),
-                models.Value('-'),
-                models.F('field__tract__rural_property__name'),
-                output_field=models.CharField()
-            ),
-            tract_code=models.F('field__tract__code'),
-            field_code=models.F('field__code'),
-            created_by_name=models.F('created_by__name'),
-            insect_trap_type_name=Concat(
-                models.F('type__name'),
-                models.Value(' ('),
-                models.F('type__insect__name'),
-                models.Value(')'),
-                output_field=models.CharField()
-            )
-        ).all()
+        fields = FieldRepository().list_all()
+        bounding_box = [get_bounding_box(fields=fields, field_gis='geometry')]
 
-        fields_bbox = fields.aggregate(Collect('geometry'))['geometry__collect'].extent
+        insect_traps = InsectTrapRepository().list_all()
 
-        min_x, min_y, max_x, max_y = fields_bbox[0], fields_bbox[1], fields_bbox[2], fields_bbox[3]
-        bounding_box = [min_x, min_y, max_x, max_y]
-
-        context = {
-            'fields_geojson': list_dict_to_geojson(list(fields.values())),
-            'insect_traps_geojson': list_dict_to_geojson(list(insect_traps.values())),
-            'bounding_box': bounding_box,
-        }
+        context = dict(
+            fields_geojson=list_dict_to_geojson(list(fields.values())),
+            insect_traps_geojson=list_dict_to_geojson(list(insect_traps.values())),
+            bounding_box=bounding_box,
+        )
 
         return render(request, 'insect_trap.html', context)
 
     elif request.method == "POST":
-        if request.method == 'POST':
-            field_id = request.POST.get('field_id')
-            latitude = request.POST.get('latitude')
-            longitude = request.POST.get('longitude')
-            trap_type = request.POST.get('trap_type_id')
+        field_id = request.POST.get('field_id')
+        latitude = request.POST.get('latitude')
+        longitude = request.POST.get('longitude')
+        insect_trap_type_id = request.POST.get('trap_type_id')
 
-            field = Field.objects.get(id=field_id)
-            insect_trap = InsectTrap.objects.create(
-                field=field,
-                geometry=f'POINT({longitude} {latitude})',
-                type_id=trap_type,
-                created_by_id=1
-            )
+        field = Field.objects.get(id=field_id)
 
-            popup_content = f"""
-            <div class="popup-content">
-                <table class="popup-table">
-                    <tr><th>Propriedade</th><td>{field.tract.rural_property.code}</td></tr>
-                    <tr><th>Gleba</th><td>{field.tract.code}</td></tr>
-                    <tr><th>Talhão</th><td>{field.code}</td></tr>
-                    <tr><th>Criado por</th><td>{insect_trap.created_by.name}</td></tr>
-                    <tr><th>Criado em</th><td>{insect_trap.created_at}</td></tr>
-                </table>
-            </div>
-            """
+        InsectTrap.objects.create(
+            field=field,
+            geometry=f'POINT({longitude} {latitude})',
+            type_id=insect_trap_type_id,
+            created_by_id=1
+        )
 
-            response_data = {
-                'success': True,
-                'latitude': latitude,
-                'longitude': longitude,
-                'popupContent': popup_content
-            }
-
-            return JsonResponse(response_data)
-        return JsonResponse({'success': False}, status=400)
+        return JsonResponse(dict(success=True))
 
     else:
-        return JsonResponse({'success': False, 'errors': 'Invalid request method'})
+        return JsonResponse(dict(success=False, errors='Invalid request method'))
