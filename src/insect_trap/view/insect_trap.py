@@ -1,55 +1,12 @@
-import json
-from datetime import datetime, date
-from typing import List, Dict
-
-from django.contrib.gis.geos import GEOSGeometry
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
-from geojson import FeatureCollection
 
-from base.gis import get_bounding_box
+from base.gis import get_bounding_box, list_dict_to_geojson
 from insect_trap.models import InsectTrap
 from insect_trap.repositories import InsectTrapRepository
 from rural_property.models import Field
 from rural_property.repository import FieldRepository
-
-
-def list_dict_to_geojson(values: List[Dict]):
-    def format_list_of_dicts(data):
-        def format_datetime(value):
-            if isinstance(value, datetime):
-                return value.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-            elif isinstance(value, date):
-                return value.strftime('%Y-%m-%d')
-            elif isinstance(value, dict):
-                return {key: format_datetime(val) for key, val in value.items()}
-            elif isinstance(value, list):
-                return [format_datetime(item) for item in value]
-            else:
-                return value
-
-        return [{key: format_datetime(value) for key, value in item.items()} for item in data]
-
-    format_dict = []
-
-    for value in values:
-        rec = dict()
-
-        rec["type"] = "Feature"
-        rec["geometry"] = json.loads(value["geometry"].geojson)
-
-        rec["properties"] = dict()
-
-        for index, field in value.items():
-            if not isinstance(field, GEOSGeometry):
-                rec["properties"][index] = field
-
-        format_dict.append(rec)
-
-    fields_geojson = FeatureCollection(format_list_of_dicts(format_dict))
-
-    return json.dumps(dict(fields_geojson))
 
 
 @csrf_exempt
