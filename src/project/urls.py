@@ -7,7 +7,7 @@ from insect_trap.view import insect_trap, insect_trap_result, insect_trap_type
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    path('', RedirectView.as_view(pattern_name='rural_property', permanent=False)),
+    path('', RedirectView.as_view(pattern_name='insect_trap', permanent=False)),
 
     path('insect-trap/', insect_trap.view, name='insect_trap'),
 
