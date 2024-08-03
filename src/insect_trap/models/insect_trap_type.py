@@ -8,6 +8,9 @@ class InsectTrapType(LogMixin):
     description = models.TextField('descrição', null=True, blank=True)
     insect = models.ForeignKey('insect_trap.Insect', verbose_name='inseto', on_delete=models.CASCADE)
 
+    infestation_alert_level = models.PositiveIntegerField(' nível alerta de infestação',
+                                                          help_text='em número de insetos')
+
     class Meta:
         db_table = 'insect_trap_type'
         verbose_name = 'tipo de armadilha'
