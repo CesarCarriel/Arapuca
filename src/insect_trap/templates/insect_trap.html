@@ -376,10 +376,14 @@
 
         L.geoJSON(insectTrapsGeoJson, {
             pointToLayer: function (feature, latlng) {
-                if (feature.properties.high_infestation === false) {
-                    iconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png';
+                if (feature.properties.has_any_result === false) {
+                    iconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-grey.png';
                 } else {
-                    iconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png';
+                    if (feature.properties.high_infestation === false) {
+                        iconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png';
+                    } else {
+                        iconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png';
+                    }
                 }
 
                 let greenIcon = new L.Icon({

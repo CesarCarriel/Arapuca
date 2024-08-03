@@ -26,6 +26,7 @@ class InsectTrapRepository:
                 models.Value(')'),
                 output_field=models.CharField()
             ),
+            has_any_result=models.Exists(latest_results),
             latest_result=models.Subquery(latest_results.values('insect_number')[:1]),
             high_infestation=models.Case(
                 models.When(
