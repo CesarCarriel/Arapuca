@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
@@ -9,6 +10,7 @@ from rural_property.models import Field
 from rural_property.repository import FieldRepository
 
 
+@login_required
 @csrf_exempt
 def view(request):
     if request.method == "GET":
@@ -37,7 +39,7 @@ def view(request):
             field=field,
             geometry=f'POINT({longitude} {latitude})',
             type_id=insect_trap_type_id,
-            created_by_id=1
+            created_by=request.user
         )
 
         return JsonResponse(dict(success=True))

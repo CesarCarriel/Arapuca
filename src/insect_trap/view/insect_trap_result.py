@@ -1,4 +1,5 @@
 from django import forms
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
@@ -13,6 +14,7 @@ class InsectTrapResultForm(forms.ModelForm):
         fields = ['insect_number', 'observation']
 
 
+@login_required
 @csrf_exempt
 def view(request, id: int):
     if request.method == 'GET':
@@ -30,7 +32,7 @@ def view(request, id: int):
         if form.is_valid():
             result = form.save(commit=False)
             result.insect_trap = insect_trap
-            result.created_by_id = 1
+            result.created_by = request.user
 
             result.save()
 
